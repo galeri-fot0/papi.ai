@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Papi AI — Asisten Cerdas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #0b0b10;
+    --bg2:     #111118;
+    --bg3:     #18181f;
+    --surface: #1e1e28;
+    --surf2:   #252532;
+    --border:  rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --gold:    #f0c060;
+    --gold2:   #d4a820;
+    --golddim: rgba(240,192,96,0.13);
+    --text:    #eeebe6;
+    --text2:   #9a97a5;
+    --text3:   #65636f;
+    --purple:  #7b6cf6;
+    --purpledim: rgba(123,108,246,0.15);
+    --r:       14px;
+    --rsm:     8px;
+    --rlg:     20px;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    overflow: hidden;
+  }
+
+  .app {
+    display: grid;
+    grid-template-columns: 255px 1fr;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .sb-head {
+    padding: 22px 18px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo-mark {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 17px; color: #1a0f00;
+    flex-shrink: 0;
+  }
+  .logo-name {
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 20px; color: var(--text);
+    letter-spacing: -.3px;
+  }
+  .logo-name span { color: var(--gold); }
+
+  .new-btn {
+    margin-top: 13px; width: 100%;
+    display: flex; align-items: center; gap: 8px;
+    background: var(--golddim); border: 1px solid rgba(240,192,96,0.22);
+    color: var(--gold); font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 500;
+    padding: 8px 14px; border-radius: var(--rsm); cursor: pointer;
+    transition: background .18s, border-color .18s;
+  }
+  .new-btn:hover { background: rgba(240,192,96,0.21); border-color: rgba(240,192,96,0.38); }
+
+  .sb-label {
+    padding: 14px 18px 6px;
+    font-size: 10.5px; font-weight: 500; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--text3);
+  }
+
+  .history {
+    flex: 1; overflow-y: auto; padding: 0 10px;
+    scrollbar-width: thin; scrollbar-color: var(--surf2) transparent;
+  }
+  .h-item {
+    padding: 8px 10px; border-radius: var(--rsm);
+    font-size: 13px; color: var(--text2); cursor: pointer;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    transition: background .14s, color .14s;
+  }
+  .h-item:hover, .h-item.active { background: var(--surface); color: var(--text); }
+
+  .sb-foot {
+    padding: 12px 12px;
+    border-top: 1px solid var(--border);
+  }
+  .user-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 8px; border-radius: var(--rsm); cursor: pointer;
+    transition: background .14s;
+  }
+  .user-row:hover { background: var(--surface); }
+  .u-av {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--purpledim); border: 1px solid rgba(123,108,246,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; color: var(--purple); flex-shrink: 0;
+  }
+  .u-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .u-plan { font-size: 11px; color: var(--gold); }
+
+  /* ── MAIN ── */
+  .main { display: flex; flex-direction: column; overflow: hidden; }
+
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 26px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(11,11,16,0.6);
+    backdrop-filter: blur(12px);
+    flex-shrink: 0;
+  }
+  .model-pill {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--surface); border: 1px solid var(--border2);
+    padding: 5px 12px 5px 8px; border-radius: 99px;
+    font-size: 12px; font-weight: 500; color: var(--text2);
+  }
+  .mdot { width: 7px; height: 7px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 6px var(--gold); }
+  .tb-right { display: flex; gap: 7px; }
+  .ib {
+    width: 33px; height: 33px; border-radius: var(--rsm);
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text2); display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: background .14s, color .14s;
+  }
+  .ib:hover { background: var(--surface); color: var(--text); border-color: var(--border2); }
+  .ib svg { width: 15px; height: 15px; }
+
+  /* ── CHAT ── */
+  .chat {
+    flex: 1; overflow-y: auto; padding: 28px 0;
+    scrollbar-width: thin; scrollbar-color: var(--surf2) transparent;
+  }
+  .msg-wrap { max-width: 760px; margin: 0 auto; padding: 0 26px; }
+
+  .welcome {
+    max-width: 600px; margin: 36px auto 0; padding: 0 26px; text-align: center;
+  }
+  .wicon {
+    width: 62px; height: 62px; border-radius: 17px;
+    background: var(--gold);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 26px; color: #1a0f00;
+    margin-bottom: 18px;
+  }
+  .wtitle {
+    font-family: 'Syne', sans-serif; font-size: 30px; font-weight: 700;
+    color: var(--text); margin-bottom: 10px; letter-spacing: -.4px;
+  }
+  .wtitle span { color: var(--gold); }
+  .wsub { color: var(--text2); font-size: 14.5px; line-height: 1.65; margin-bottom: 28px; }
+  .suggs { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; text-align: left; }
+  .sugg {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 13px 15px; cursor: pointer;
+    transition: background .17s, border-color .17s, transform .17s;
+  }
+  .sugg:hover { background: var(--surf2); border-color: rgba(240,192,96,0.28); transform: translateY(-1px); }
+  .sugg .stag { font-size: 11px; color: var(--gold); font-weight: 500; margin-bottom: 4px; }
+  .sugg .stxt { font-size: 12.5px; color: var(--text2); line-height: 1.45; }
+
+  /* messages */
+  .msg {
+    display: flex; gap: 12px; margin-bottom: 22px;
+    animation: fadeUp .22s ease;
+  }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(7px); } to { opacity:1; transform:translateY(0); } }
+  .msg.user { flex-direction: row-reverse; }
+  .mav {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; margin-top: 2px;
+    display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700;
+  }
+  .mav.ai { background: var(--gold); color: #1a0f00; font-family:'Syne',sans-serif; }
+  .mav.user { background: var(--purpledim); border: 1px solid rgba(123,108,246,0.3); color: var(--purple); }
+  .mbub {
+    max-width: calc(100% - 90px); padding: 11px 15px;
+    font-size: 14px; line-height: 1.65; border-radius: var(--r);
+  }
+  .msg.ai .mbub {
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); border-top-left-radius: 4px;
+  }
+  .msg.user .mbub {
+    background: var(--golddim); border: 1px solid rgba(240,192,96,0.2);
+    color: var(--text); border-top-right-radius: 4px;
+  }
+  .mbub p { margin-bottom: 8px; }
+  .mbub p:last-child { margin-bottom: 0; }
+  .mbub strong { color: var(--gold); font-weight: 600; }
+  .mbub code {
+    background: rgba(0,0,0,0.35); border: 1px solid var(--border2);
+    border-radius: 4px; padding: 1px 5px; font-size: 12.5px; color: #9ee0b0;
+  }
+  .mbub pre {
+    background: rgba(0,0,0,0.4); border: 1px solid var(--border);
+    border-radius: var(--rsm); padding: 12px 14px; margin: 8px 0;
+    overflow-x: auto; font-size: 12.5px; line-height: 1.55;
+  }
+  .mbub pre code { background: none; border: none; padding: 0; color: #c8d8b8; }
+  .mbub ul, .mbub ol { padding-left: 17px; margin: 6px 0; }
+  .mbub li { margin-bottom: 3px; }
+
+  /* typing */
+  .typing { display: flex; gap: 12px; margin-bottom: 22px; }
+  .tdots {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 4px var(--r) var(--r) var(--r);
+    padding: 13px 16px; display: flex; align-items: center; gap: 5px;
+  }
+  .dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--text3);
+    animation: pulse 1.3s infinite;
+  }
+  .dot:nth-child(2) { animation-delay: .18s; }
+  .dot:nth-child(3) { animation-delay: .36s; }
+  @keyframes pulse {
+    0%,60%,100% { transform:scale(.75); opacity:.4; }
+    30% { transform:scale(1.1); opacity:1; }
+  }
+
+  /* ── INPUT ── */
+  .input-area { padding: 14px 26px 22px; flex-shrink: 0; }
+  .inbox {
+    max-width: 760px; margin: 0 auto;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--rlg); padding: 13px 12px 11px 17px;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .inbox:focus-within {
+    border-color: rgba(240,192,96,0.38);
+    box-shadow: 0 0 0 3px rgba(240,192,96,0.06);
+  }
+  .irow { display: flex; align-items: flex-end; gap: 9px; }
+  #msg {
+    flex: 1; background: transparent; border: none; outline: none;
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px;
+    line-height: 1.6; resize: none; min-height: 22px; max-height: 180px;
+    overflow-y: auto; scrollbar-width: thin;
+  }
+  #msg::placeholder { color: var(--text3); }
+  #send {
+    width: 35px; height: 35px; border-radius: 10px;
+    background: var(--gold); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: background .15s, transform .1s;
+  }
+  #send:hover { background: var(--gold2); }
+  #send:active { transform: scale(.96); }
+  #send:disabled { background: var(--surf2); cursor: not-allowed; }
+  #send svg { width: 15px; height: 15px; }
+  .ifooter {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 9px; padding-top: 9px; border-top: 1px solid var(--border);
+  }
+  .hint { font-size: 11.5px; color: var(--text3); }
+  .disc { text-align: center; font-size: 11.5px; color: var(--text3); margin-top: 8px; max-width: 760px; margin-left: auto; margin-right: auto; }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-thumb { background: var(--surf2); border-radius: 99px; }
+
+  @media (max-width: 640px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .topbar, .input-area { padding-left: 14px; padding-right: 14px; }
+    .msg-wrap, .welcome { padding-left: 14px; padding-right: 14px; }
+    .suggs { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-head">
+      <div class="logo">
+        <div class="logo-mark">P</div>
+        <div class="logo-name">Papi <span>AI</span></div>
+      </div>
+      <button class="new-btn" onclick="newChat()">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+        </svg>
+        Chat Baru
+      </button>
+    </div>
+    <div class="sb-label">Riwayat</div>
+    <div class="history" id="hist"></div>
+    <div class="sb-foot">
+      <div class="user-row">
+        <div class="u-av">P</div>
+        <div>
+          <div class="u-name">Pengguna</div>
+          <div class="u-plan">✦ Papi Pro</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div class="model-pill">
+        <span class="mdot"></span>
+        Papi AI · Cerdas & Cepat
+      </div>
+      <div class="tb-right">
+        <button class="ib" title="Pengaturan">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="chat" id="chat">
+      <div id="welcome-screen" class="welcome">
+        <div class="wicon">P</div>
+        <h1 class="wtitle">Halo! Saya <span>Papi AI</span></h1>
+        <p class="wsub">Asisten kecerdasan buatan Anda yang siap membantu kapan saja.<br>Tanyakan apa pun — saya di sini untuk Anda.</p>
+        <div class="suggs">
+          <div class="sugg" onclick="useSugg('Jelaskan cara kerja kecerdasan buatan dengan bahasa yang mudah dipahami')">
+            <div class="stag">Pelajari AI</div>
+            <div class="stxt">Jelaskan cara kerja kecerdasan buatan</div>
+          </div>
+          <div class="sugg" onclick="useSugg('Buatkan rencana belajar Python dari nol selama 30 hari')">
+            <div class="stag">Coding</div>
+            <div class="stxt">Rencana belajar Python 30 hari</div>
+          </div>
+          <div class="sugg" onclick="useSugg('Berikan 5 ide bisnis online yang cocok dijalankan di Indonesia')">
+            <div class="stag">Bisnis</div>
+            <div class="stxt">Ide bisnis online di Indonesia</div>
+          </div>
+          <div class="sugg" onclick="useSugg('Tulis puisi tentang keindahan alam Indonesia')">
+            <div class="stag">Kreatif</div>
+            <div class="stxt">Puisi tentang alam Indonesia</div>
+          </div>
+        </div>
+      </div>
+      <div class="msg-wrap" id="msgs"></div>
+    </div>
+
+    <div class="input-area">
+      <div class="inbox">
+        <div class="irow">
+          <textarea id="msg" rows="1" placeholder="Tulis pesan untuk Papi AI…" oninput="resize(this)" onkeydown="onKey(event)"></textarea>
+          <button id="send" disabled onclick="kirim()">
+            <svg fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/>
+            </svg>
+          </button>
+        </div>
+        <div class="ifooter">
+          <span class="hint">Enter kirim · Shift+Enter baris baru</span>
+        </div>
+      </div>
+      <p class="disc">Papi AI dapat membuat kesalahan. Harap verifikasi informasi penting.</p>
+    </div>
+  </main>
+</div>
+
+<script>
+  const msgEl   = document.getElementById("msg");
+  const sendBtn = document.getElementById("send");
+  const msgsEl  = document.getElementById("msgs");
+  const chatEl  = document.getElementById("chat");
+  const histEl  = document.getElementById("hist");
+  const welcome = document.getElementById("welcome-screen");
+
+  let history = [];
+  let busy    = false;
+
+  msgEl.addEventListener("input", () => {
+    sendBtn.disabled = !msgEl.value.trim() || busy;
+  });
+
+  function resize(el) {
+    el.style.height = "auto";
+    el.style.height = Math.min(el.scrollHeight, 180) + "px";
+  }
+
+  function onKey(e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (!sendBtn.disabled) kirim();
+    }
+  }
+
+  function useSugg(txt) {
+    msgEl.value = txt;
+    sendBtn.disabled = false;
+    kirim();
+  }
+
+  function fmt(t) {
+    t = t.replace(/\*\*(.+?)\*\*/g,   "<strong>$1</strong>");
+    t = t.replace(/`([^`\n]+)`/g,      "<code>$1</code>");
+    t = t.replace(/```[\w]*\n?([\s\S]+?)```/g, "<pre><code>$1</code></pre>");
+    t = t.replace(/^[\*\-] (.+)$/gm,   "<li>$1</li>");
+    t = t.replace(/(<li>[\s\S]+?<\/li>)/g, "<ul>$1</ul>");
+    return t.split(/\n\n+/).map(p => p.trim() ? `<p>${p.replace(/\n/g,"<br>")}</p>` : "").join("") || `<p>${t}</p>`;
+  }
+
+  function addMsg(role, text) {
+    welcome.style.display = "none";
+    const wrap = document.createElement("div");
+    wrap.className = "msg " + role;
+
+    const av = document.createElement("div");
+    av.className = "mav " + role;
+    av.textContent = role === "ai" ? "P" : "K";
+
+    const bub = document.createElement("div");
+    bub.className = "mbub";
+    bub.innerHTML = fmt(text);
+
+    wrap.appendChild(av);
+    wrap.appendChild(bub);
+    msgsEl.appendChild(wrap);
+    chatEl.scrollTop = chatEl.scrollHeight;
+  }
+
+  function showTyping() {
+    const el = document.createElement("div");
+    el.className = "typing"; el.id = "typing";
+    const av = document.createElement("div");
+    av.className = "mav ai"; av.textContent = "P";
+    const dots = document.createElement("div");
+    dots.className = "tdots";
+    dots.innerHTML = "<span class='dot'></span><span class='dot'></span><span class='dot'></span>";
+    el.appendChild(av); el.appendChild(dots);
+    msgsEl.appendChild(el);
+    chatEl.scrollTop = chatEl.scrollHeight;
+  }
+
+  function removeTyping() {
+    document.getElementById("typing")?.remove();
+  }
+
+  function addHistory(txt) {
+    const label = txt.length > 38 ? txt.slice(0, 38) + "…" : txt;
+    const item = document.createElement("div");
+    item.className = "h-item active";
+    item.textContent = label;
+    histEl.querySelectorAll(".h-item").forEach(i => i.classList.remove("active"));
+    histEl.prepend(item);
+  }
+
+  async function kirim() {
+    const text = msgEl.value.trim();
+    if (!text || busy) return;
+    busy = true;
+    msgEl.value = ""; msgEl.style.height = "auto";
+    sendBtn.disabled = true;
+
+    if (history.length === 0) addHistory(text);
+    addMsg("user", text);
+    history.push({ role: "user", content: text });
+    showTyping();
+
+    try {
+      const res  = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: history }),
+      });
+      const data = await res.json();
+      removeTyping();
+
+      if (data.content?.[0]?.text) {
+        const reply = data.content[0].text;
+        history.push({ role: "assistant", content: reply });
+        addMsg("ai", reply);
+      } else {
+        addMsg("ai", "Maaf, terjadi kesalahan: " + (data.error?.message || "Respons tidak valid."));
+      }
+    } catch (e) {
+      removeTyping();
+      addMsg("ai", "Gagal terhubung ke server. Pastikan server sudah berjalan dengan `node server.js`.");
+    }
+
+    busy = false;
+    sendBtn.disabled = !msgEl.value.trim();
+  }
+
+  function newChat() {
+    history = [];
+    msgsEl.innerHTML = "";
+    welcome.style.display = "block";
+    histEl.querySelectorAll(".h-item").forEach(i => i.classList.remove("active"));
+  }
+
+  msgEl.focus();
+</script>
+</body>
+</html>
