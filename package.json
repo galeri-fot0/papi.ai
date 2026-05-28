@@ -1,0 +1,13 @@
+{
+  "name": "papi-ai",
+  "version": "1.0.0",
+  "description": "Papi AI - Website Asisten Cerdas",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
